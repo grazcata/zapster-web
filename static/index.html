@@ -166,6 +166,12 @@
         .btn-youtube { background: #FF0033; border: none; color: white; font-weight: bold; }
         .btn-netflix:active, .btn-youtube:active { opacity: 0.85; }
 
+        .btn-red { background: #DC2626; border: none; color: white; font-weight: bold; font-size: 13px; }
+        .btn-green { background: #16A34A; border: none; color: white; font-weight: bold; font-size: 13px; }
+        .btn-yellow { background: #CA8A04; border: none; color: white; font-weight: bold; font-size: 13px; }
+        .btn-blue { background: #2563EB; border: none; color: white; font-weight: bold; font-size: 13px; }
+        .btn-red:active, .btn-green:active, .btn-yellow:active, .btn-blue:active { opacity: 0.8; transform: scale(0.95); }
+
         /* Dialogs */
         .modal {
             display: none;
@@ -232,11 +238,16 @@
             <button class="dpad-ok" onclick="sendKey('DPAD_CENTER')">OK</button>
         </div>
 
-        <!-- Volume & Mute -->
+        <!-- Volume, Channel & Mute -->
         <div class="row">
             <button class="btn" onclick="sendKey('VOLUME_DOWN')">VOL −</button>
             <button class="btn" style="color: #EF4444;" onclick="sendKey('VOLUME_MUTE')">MUTE</button>
             <button class="btn" onclick="sendKey('VOLUME_UP')">VOL ＋</button>
+        </div>
+        <div class="row">
+            <button class="btn" onclick="sendKey('CHANNEL_DOWN')">CH −</button>
+            <button class="btn" onclick="sendKey('INFO')">INFO</button>
+            <button class="btn" onclick="sendKey('CHANNEL_UP')">CH ＋</button>
         </div>
 
         <!-- Playback Controls -->
@@ -244,6 +255,14 @@
             <button class="btn" onclick="sendKey('MEDIA_REWIND')">⏪ 10s</button>
             <button class="btn" onclick="sendKey('MEDIA_PLAY_PAUSE')">⏯ Play/Pause</button>
             <button class="btn" onclick="sendKey('MEDIA_FAST_FORWARD')">10s ⏩</button>
+        </div>
+
+        <!-- IPTV Color Keys -->
+        <div class="row">
+            <button class="btn btn-red" onclick="sendKey('PROG_RED')">● Rouge</button>
+            <button class="btn btn-green" onclick="sendKey('PROG_GREEN')">● Vert</button>
+            <button class="btn btn-yellow" onclick="sendKey('PROG_YELLOW')">● Jaune</button>
+            <button class="btn btn-blue" onclick="sendKey('PROG_BLUE')">● Bleu</button>
         </div>
 
         <!-- App Shortcuts -->

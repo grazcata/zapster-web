@@ -78,9 +78,21 @@ async def api_key(request):
     data = await request.json()
     ip = data.get("ip", "192.168.1.7")
     key = data.get("key")
+
+    key_aliases = {
+        "PROG_RED": 183,
+        "PROG_GREEN": 184,
+        "PROG_YELLOW": 185,
+        "PROG_BLUE": 186,
+        "CHANNEL_UP": 166,
+        "CHANNEL_DOWN": 167,
+        "INFO": 165,
+    }
+    target_key = key_aliases.get(key, key)
+
     try:
         remote = await get_remote(ip)
-        remote.send_key_command(key)
+        remote.send_key_command(target_key)
         return web.json_response({"success": True})
     except Exception as e:
         return web.json_response({"success": False, "error": str(e)}, status=500)
