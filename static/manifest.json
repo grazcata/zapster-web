@@ -1,0 +1,17 @@
+{
+  "name": "Zapster Remote",
+  "short_name": "Zapster",
+  "description": "Télécommande Android TV & Google TV pour la maison",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121418",
+  "theme_color": "#121418",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

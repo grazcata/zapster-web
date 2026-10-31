@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zapster Remote</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zapster">
+    <link rel="apple-touch-icon" href="/static/icon.png">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; }
+        body {
+            background-color: #121418;
+            color: #F3F4F6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 24px) 16px;
+        }
+        .toast {
+            position: fixed;
+            top: env(safe-area-inset-top, 20px);
+            background: #2563EB;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .header {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+        .device-selector {
+            background: #1E222B;
+            border: 1px solid #2A303C;
+            border-radius: 20px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; }
+        .dot.online { background: #10B981; }
+        select {
+            background: transparent;
+            color: #F3F4F6;
+            border: none;
+            font-size: 14px;
+            outline: none;
+        }
+        select option { background: #1E222B; color: #F3F4F6; }
+
+        .btn-power {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #EF4444;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .btn-power:active { transform: scale(0.92); }
+
+        .remote-container {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .btn {
+            background: #1E222B;
+            border: 1px solid #2A303C;
+            border-radius: 16px;
+            color: #F3F4F6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 14px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            transition: all 0.1s ease;
+        }
+        .btn:active { background: #2A303C; transform: scale(0.96); }
+        .btn.primary { background: #1D4ED8; border-color: #2563EB; }
+        .btn.primary:active { background: #2563EB; }
+
+        /* D-Pad */
+        .dpad {
+            position: relative;
+            width: 270px;
+            height: 270px;
+            border-radius: 50%;
+            background: #181B22;
+            border: 2px solid #2A303C;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            margin: 6px 0;
+        }
+        .dpad-btn {
+            position: absolute;
+            background: transparent;
+            border: none;
+            color: #F3F4F6;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dpad-btn:active { color: #3B82F6; }
+        .dpad-up { top: 6px; left: 85px; width: 100px; height: 75px; }
+        .dpad-down { bottom: 6px; left: 85px; width: 100px; height: 75px; }
+        .dpad-left { top: 85px; left: 6px; width: 75px; height: 100px; }
+        .dpad-right { top: 85px; right: 6px; width: 75px; height: 100px; }
+        .dpad-ok {
+            position: absolute;
+            top: 85px;
+            left: 85px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #2563EB;
+            border: 3px solid #181B22;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+        .dpad-ok:active { transform: scale(0.94); background: #1D4ED8; }
+
+        .btn-netflix { background: #E50914; border: none; color: white; font-weight: bold; }
+        .btn-youtube { background: #FF0033; border: none; color: white; font-weight: bold; }
+        .btn-netflix:active, .btn-youtube:active { opacity: 0.85; }
+
+        /* Dialogs */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1E222B;
+            border: 1px solid #2A303C;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .input-text {
+            background: #121418;
+            border: 1px solid #2A303C;
+            color: white;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="device-selector">
+            <div id="statusDot" class="dot"></div>
+            <select id="deviceSelect" onchange="changeDevice()">
+                <option value="192.168.1.7">TV Sony (Salon)</option>
+                <option value="192.168.1.10">Xiaomi Stick</option>
+            </select>
+        </div>
+        <button class="btn-power" onclick="sendKey('POWER')">⏻</button>
+    </div>
+
+    <div class="remote-container">
+        <!-- System Navigation -->
+        <div class="row">
+            <button class="btn" onclick="sendKey('BACK')">⮌ Retour</button>
+            <button class="btn primary" onclick="sendKey('HOME')">⌂ Accueil</button>
+            <button class="btn" onclick="openTextDialog()">⌨️ Clavier</button>
+        </div>
+
+        <!-- Directional Pad -->
+        <div class="dpad">
+            <button class="dpad-btn dpad-up" onclick="sendKey('DPAD_UP')">▲</button>
+            <button class="dpad-btn dpad-down" onclick="sendKey('DPAD_DOWN')">▼</button>
+            <button class="dpad-btn dpad-left" onclick="sendKey('DPAD_LEFT')">◀</button>
+            <button class="dpad-btn dpad-right" onclick="sendKey('DPAD_RIGHT')">▶</button>
+            <button class="dpad-ok" onclick="sendKey('DPAD_CENTER')">OK</button>
+        </div>
+
+        <!-- Volume & Mute -->
+        <div class="row">
+            <button class="btn" onclick="sendKey('VOLUME_DOWN')">VOL −</button>
+            <button class="btn" style="color: #EF4444;" onclick="sendKey('VOLUME_MUTE')">MUTE</button>
+            <button class="btn" onclick="sendKey('VOLUME_UP')">VOL ＋</button>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="row">
+            <button class="btn" onclick="sendKey('MEDIA_REWIND')">⏪ 10s</button>
+            <button class="btn" onclick="sendKey('MEDIA_PLAY_PAUSE')">⏯ Play/Pause</button>
+            <button class="btn" onclick="sendKey('MEDIA_FAST_FORWARD')">10s ⏩</button>
+        </div>
+
+        <!-- App Shortcuts -->
+        <div class="row">
+            <button class="btn btn-netflix" onclick="launchApp('https://www.netflix.com/title')">NETFLIX</button>
+            <button class="btn btn-youtube" onclick="launchApp('https://www.youtube.com')">YouTube</button>
+        </div>
+
+        <!-- Sideload & Pair Settings -->
+        <div class="row">
+            <button class="btn" style="font-size: 13px; color: #9CA3AF;" onclick="openPairDialog()">🔑 Associer un appareil</button>
+            <button class="btn" style="font-size: 13px; color: #9CA3AF;" onclick="triggerSideload()">📦 Installer APK</button>
+            <input type="file" id="apkFileInput" accept=".apk" style="display: none;" onchange="uploadApk(this)">
+        </div>
+    </div>
+
+    <!-- Modal Keyboard -->
+    <div id="textModal" class="modal">
+        <div class="modal-content">
+            <h3>Saisie de texte sur la TV</h3>
+            <p style="font-size: 13px; color: #9CA3AF;">Tapez le texte à insérer dans le champ actif sur la télévision :</p>
+            <input type="text" id="textInput" class="input-text" placeholder="Recherche, lien, mot de passe...">
+            <div class="modal-actions">
+                <button class="btn" onclick="closeTextDialog()">Annuler</button>
+                <button class="btn primary" onclick="submitText(false)">Envoyer</button>
+                <button class="btn primary" onclick="submitText(true)">Envoyer ↵</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pairing -->
+    <div id="pairModal" class="modal">
+        <div class="modal-content">
+            <h3>Associer la TV</h3>
+            <p style="font-size: 13px; color: #9CA3AF;">1. Cliquez sur "Afficher le code" pour faire apparaître le code PIN sur l'écran TV.<br>2. Recopiez le code à 6 caractères ci-dessous :</p>
+            <button class="btn" onclick="startPair()">1. Afficher le code sur la TV</button>
+            <input type="text" id="pairCodeInput" class="input-text" placeholder="Code à 6 chiffres (ex: 1A2B3C)" maxlength="6" style="text-align: center; text-transform: uppercase; font-size: 18px; letter-spacing: 2px;">
+            <div class="modal-actions">
+                <button class="btn" onclick="closePairDialog()">Fermer</button>
+                <button class="btn primary" onclick="finishPair()">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(msg) {
+            let toast = document.getElementById("toast");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "toast";
+                toast.className = "toast";
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 3500);
+        }
+
+        function triggerSideload() {
+            document.getElementById("apkFileInput").click();
+        }
+
+        async function uploadApk(input) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            showToast("Envoi de l'APK en cours...");
+            const formData = new FormData();
+            formData.append("ip", getIp());
+            formData.append("apk", file);
+
+            try {
+                const res = await fetch("/api/upload_apk", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message || "APK envoyé !");
+                } else {
+                    alert("Erreur : " + data.error);
+                }
+            } catch(e) {
+                alert("Erreur lors de l'envoi de l'APK");
+            } finally {
+                input.value = "";
+            }
+        }
+
+        function haptic() {
+            if (navigator.vibrate) navigator.vibrate(25);
+        }
+
+        function getIp() {
+            return document.getElementById("deviceSelect").value;
+        }
+
+        async function checkStatus() {
+            try {
+                const res = await fetch(`/api/status?ip=${getIp()}`);
+                const data = await res.json();
+                const dot = document.getElementById("statusDot");
+                if (data.online) {
+                    dot.classList.add("online");
+                } else {
+                    dot.classList.remove("online");
+                }
+            } catch(e) {
+                document.getElementById("statusDot").classList.remove("online");
+            }
+        }
+
+        function changeDevice() {
+            checkStatus();
+        }
+
+        async function sendKey(key) {
+            haptic();
+            try {
+                await fetch("/api/key", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ ip: getIp(), key: key })
+                });
+            } catch(e) {}
+        }
+
+        async function launchApp(link) {
+            haptic();
+            try {
+                await fetch("/api/app", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ ip: getIp(), link: link })
+                });
+            } catch(e) {}
+        }
+
+        function openTextDialog() {
+            document.getElementById("textModal").classList.add("active");
+            document.getElementById("textInput").focus();
+        }
+        function closeTextDialog() {
+            document.getElementById("textModal").classList.remove("active");
+            document.getElementById("textInput").value = "";
+        }
+        async function submitText(enter) {
+            const val = document.getElementById("textInput").value;
+            haptic();
+            await fetch("/api/text", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ ip: getIp(), text: val, enter: enter })
+            });
+            closeTextDialog();
+        }
+
+        function openPairDialog() {
+            document.getElementById("pairModal").classList.add("active");
+        }
+        function closePairDialog() {
+            document.getElementById("pairModal").classList.remove("active");
+        }
+        async function startPair() {
+            alert("Demande envoyée. Regardez votre écran de TV !");
+            await fetch("/api/pair/start", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ ip: getIp() })
+            });
+        }
+        async function finishPair() {
+            const code = document.getElementById("pairCodeInput").value.trim();
+            if (!code) return;
+            const res = await fetch("/api/pair/finish", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ ip: getIp(), code: code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Association réussie !");
+                closePairDialog();
+                checkStatus();
+            } else {
+                alert("Erreur: " + data.error);
+            }
+        }
+
+        setInterval(checkStatus, 5000);
+        checkStatus();
+    </script>
+</body>
+</html>

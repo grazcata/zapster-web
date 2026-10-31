@@ -1,0 +1,14 @@
+[Unit]
+Description=Zapster Web Remote Server (PWA for iOS/iPhone)
+After=network.target
+
+[Service]
+Type=simple
+User=graz
+WorkingDirectory=/home/graz/workspace/projects/zapster-web
+ExecStart=/home/graz/workspace/venvs/myenv/bin/python /home/graz/workspace/projects/zapster-web/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+# .gitignore
+*.pem
+uploaded_app.apk
+__pycache__/
+*.pyc
